@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Projeto - Lab_Prog</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">    
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="/">Home</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#conteudoNavbarSuportado" aria-controls="conteudoNavbarSuportado" aria-expanded="false" aria-label="Alterna navegação">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" href="/produto/lista">Produtos</a>
+                <a class="nav-item nav-link" href="/categoria/lista">Categorias</a>
+            </div>
+        </nav>
+        
+        <div class="container mt-5">
+            <h1>Produtos:</h1>
+            <div class="row float-right">
+                <a href="/produto/adicionar">
+                    <button type="button" class="btn btn-primary">Adicionar Produto</button>
+                </a>
+            </div>
+            <br><br>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col" class="text-center">#</th>
+                        <th scope="col" class="text-center">Descrição</th>
+                        <th scope="col" class="text-center">Categoria</th>
+                        <th scope="col" class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    
+        <script>
+            $.ajax({
+                url: '/produto',
+                data: "",
+                dataType: "json",
+                type: "GET",
+                success: (res) => {
+                    res.forEach(element => {
+                        $(".table tbody").append(
+                            '<tr id=' + element.produto_id + '><th scope="row" class="text-center">' + 
+                            element.produto_id + 
+                            '</th><td id="descricao_produto" align="center">' + 
+                            element.descricao + 
+                            '</td><td id="cat' + element.produto_id + '" align="center">' +
+                            element.categoria_id +
+                            '</td><td align="center"><div class="btn-group">' +
+                                '<div class="editBtn"><button type="button" class="btn btn-warning btn-sm edit">Editar</button></div>' +
+                                '<button type="button" class="btn btn-danger btn-sm delete">Apagar</button>' +
+                            '</div></td></tr>'
+                        );
+                        $.ajax({
+                            url: '/categoria/' + element.categoria_id,
+                            type: 'GET',
+                            success: (response) => {
+                                console.log(response[0].descricao);
+                                $('#cat' + element.produto_id).html(response[0].descricao);
+                            }
+                        });
+                    });
+                    console.log(res);
+                },
+                error: (err) => {
+                    console.log(err);
+                }
+            });
+
+            $(document).ready(() => {
+                $(".edit").on('click', (event) => {
+                    event.preventDefault();
+
+                    editBox =  '<form action="#" id="form">' +
+                                    '<input type="text" name="descricao" class="form-control"/>' +
+                                '</form>';
+                    editBtn =   '<button type="button" class="btn btn-warning btn-sm save">Salvar</button>';
+
+                    $(event.target).closest('tr').find('#descricao_produto').html(editBox);
+                    $(event.target).closest('tr').find('.editBtn').html(editBtn);
+                });
+            });
+
+            $(document).ready(() => {
+                $(".editBtn").click('.save', (event) => {
+                    event.preventDefault();
+
+                    id = $(event.target).closest('tr').attr('id');
+
+                    $.ajax({
+                        url: '/produto/' + id,
+                        type: 'PUT',
+                        data: $("#form").serialize(),
+                        success: (data) => {
+                            window.location.replace('/produto/lista')
+                        },
+                        error: (err) => {
+                            console.log(err);
+                        }
+                    });
+                });
+            });
+
+            $(document).ready(() => {
+                $(".delete").click((event) => {
+                    id = $(event.target).closest('tr').attr('id');
+                    event.preventDefault();
+
+                    $.ajax({
+                        url: '/produto/' + id,
+                        type: 'DELETE',
+
+                        success: (res) => {
+                            window.location.replace('/produto/lista');
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
